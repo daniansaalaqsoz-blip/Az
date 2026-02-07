@@ -176,72 +176,84 @@ done
 # ================= MODE 3 =================
 install_apk_mode() {
 
-need_root
-
-TMPDIR="$HOME/apk_tmp"
-mkdir -p "$TMPDIR"
-
-APKS=(
-"robrox|https://apponthego.com/uploads/file_69875b7294f95.apk"
-"devheck|https://apponthego.com/uploads/file_69877b39e8361.apk"
-"scene|https://apponthego.com/uploads/file_69877bc9bead2.apk"
-"kiwi browser|https://apponthego.com/uploads/file_69877e1ade66d.apk"
-"1.1.1.1 VPN|https://apponthego.com/uploads/file_6987c5badda15.apk"
-)
-
-while true; do
 clear
 echo "===== APK INSTALLER ====="
 echo
 
-i=1
-for item in "${APKS[@]}"; do
-    NAME="${item%%|*}"
-    echo "[$i] $NAME"
-    ((i++))
+# ===== daftar APK =====
+NAMES=(
+"Robrox"
+"devheck"
+"scene"
+"kiwi browser"
+)
+
+LINKS=(
+"https://apponthego.com/uploads/file_69875b7294f95.apk"
+"https://apponthego.com/uploads/file_69877b39e8361.apk"
+"https://apponthego.com/uploads/file_69877bc9bead2.apk"
+"https://apponthego.com/uploads/file_69877e1ade66d.apk"
+)
+
+TOTAL=${#LINKS[@]}
+
+# ===== tampil list =====
+for ((i=0;i<TOTAL;i++)); do
+    echo "$((i+1))) ${NAMES[$i]}"
+done
+echo
+echo "Pilih APK (contoh 1 3 4) atau 0 = batal:"
+read -p "Pilihan: " CHOICE
+
+[ "$CHOICE" = "0" ] && main_menu
+
+TMPDIR="$HOME/apk_tmp"
+mkdir -p "$TMPDIR"
+
+# cek jumlah pilihan
+CHOICE_COUNT=$(echo $CHOICE | wc -w)
+
+for i in $CHOICE; do
+    IDX=$((i-1))
+    LINK="${LINKS[$IDX]}"
+    NAME="${NAMES[$IDX]}"
+    FILE="$TMPDIR/$NAME.apk"
+
+    [ -z "$LINK" ] && continue
+
+    echo
+    echo "===== $NAME ====="
+    echo "[+] Downloading..."
+
+    curl -L --retry 3 -o "$FILE" "$LINK"
+
+    if [ ! -s "$FILE" ]; then
+        echo "❌ gagal download"
+        continue
+    fi
+
+    echo "[+] Installing..."
+    su -c "pm install -r \"$FILE\""
+
+    if [ $? -eq 0 ]; then
+        echo "✅ sukses"
+    else
+        echo "❌ gagal install"
+    fi
+
+    # Kalau hanya satu pilihan, interaktif
+    if [ "$CHOICE_COUNT" -eq 1 ]; then
+        read -p "[Enter] lanjut ke menu install..." dummy
+    fi
 done
 
-echo "[0] Back"
-echo
-
-read -p "Pilih APK: " pick
-
-# back
-[ "$pick" = "0" ] && main_menu && return
-
-INDEX=$((pick-1))
-ITEM="${APKS[$INDEX]}"
-
-[ -z "$ITEM" ] && continue
-
-NAME="${ITEM%%|*}"
-LINK="${ITEM##*|}"
-
-FILE="$TMPDIR/${NAME}.apk"
+rm -rf "$TMPDIR"
 
 echo
-echo "[+] Download $NAME ..."
-curl -L -o "$FILE" "$LINK"
-
-if [ ! -s "$FILE" ]; then
-    echo "❌ Download gagal"
-    pause
-    continue
-fi
-
-echo "[+] Install $NAME ..."
-su -c "pm install -r \"$FILE\""
-
-if [ $? -eq 0 ]; then
-    echo "✅ Install sukses"
-else
-    echo "❌ Install gagal"
-fi
-
-rm -f "$FILE"
-
-pause
-done
+echo "===== SEMUA SELESAI ====="
+sleep 1
+# balik lagi ke menu INSTALL APK
+install_apk_mode
 }
 # ================ INFO UPDATE ================
 info_update_mode(){
@@ -255,7 +267,9 @@ echo "┃ # support root / no root"
 echo "┃ # root  : auto install"
 echo "┃ # no root : manual install/devheck"
 echo "┃ # new UI"
-echo "┃ # cpu max mhz "
+echo "┃ # cpu max mhz"
+echo "┃ # new UI download"
+echo "┃ # sistem baru download"
 echo "╰────────────────"
 
 pause
