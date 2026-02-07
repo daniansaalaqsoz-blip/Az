@@ -1,5 +1,15 @@
 #!/data/data/com.termux/files/usr/bin/bash
+PASS="SCRIP TERBARU V1.0"
 
+for i in 1 2 3; do
+    read -s -p "Password: " input
+    echo
+    [ "$input" = "$PASS" ] && break
+    echo "❌ Salah ($i/3)"
+    sleep 1
+done
+
+[ "$input" != "$PASS" ] && exit 1
 # ================= AUTO INSTALL =================
 need_pkg() {
     if ! command -v "$1" >/dev/null 2>&1; then
@@ -165,75 +175,74 @@ done
 
 # ================= MODE 3 =================
 install_apk_mode() {
-read -p "Lanjut download & install? (y/n): " confirm
-case "$confirm" in
-y|Y) ;;
-*) echo "Batal."; sleep 1; main_menu ;;
-esac
-clear
 
-LINKS=(
-"https://apponthego.com/uploads/file_69875b7294f95.apk"
-"https://apponthego.com/uploads/file_69877b39e8361.apk"
-"https://apponthego.com/uploads/file_69877bc9bead2.apk"
-"https://apponthego.com/uploads/file_69877e1ade66d.apk"
-)
-
-
-# ================= MAIN =================
+need_root
 
 TMPDIR="$HOME/apk_tmp"
 mkdir -p "$TMPDIR"
 
-echo "===== AUTO DOWNLOAD & INSTALL APK ====="
+APKS=(
+"robrox|https://apponthego.com/uploads/file_69875b7294f95.apk"
+"devheck|https://apponthego.com/uploads/file_69877b39e8361.apk"
+"scene|https://apponthego.com/uploads/file_69877bc9bead2.apk"
+"kiwi browser|https://apponthego.com/uploads/file_69877e1ade66d.apk"
+"1.1.1.1 VPN|https://apponthego.com/uploads/file_6987c5badda15.apk"
+)
 
-for LINK in "${LINKS[@]}"; do
+while true; do
+clear
+echo "===== APK INSTALLER ====="
+echo
 
-    FILE="$TMPDIR/app_$(date +%s%N).apk"
-
-    echo
-    echo "=============================="
-    echo "[+] Downloading:"
-    echo "$LINK"
-
-    curl -L \
-        --connect-timeout 15 \
-        --max-time 300 \
-        --retry 3 \
-        -o "$FILE" "$LINK"
-
-    # cek file valid
-    if [ ! -s "$FILE" ]; then
-        echo "❌ download gagal / file kosong"
-        continue
-    fi
-
-    SIZE=$(du -h "$FILE" | cut -f1)
-    echo "[+] Size: $SIZE"
-
-    echo "[+] Installing..."
-    su -c "pm install -r \"$FILE\""
-
-    if [ $? -eq 0 ]; then
-        echo "✅ Install sukses"
-    else
-        echo "❌ Install gagal (APK rusak / bukan APK / permission)"
-    fi
-
+i=1
+for item in "${APKS[@]}"; do
+    NAME="${item%%|*}"
+    echo "[$i] $NAME"
+    ((i++))
 done
 
+echo "[0] Back"
+echo
+
+read -p "Pilih APK: " pick
+
+# back
+[ "$pick" = "0" ] && main_menu && return
+
+INDEX=$((pick-1))
+ITEM="${APKS[$INDEX]}"
+
+[ -z "$ITEM" ] && continue
+
+NAME="${ITEM%%|*}"
+LINK="${ITEM##*|}"
+
+FILE="$TMPDIR/${NAME}.apk"
 
 echo
-echo "[+] Cleaning..."
-rm -rf "$TMPDIR"
+echo "[+] Download $NAME ..."
+curl -L -o "$FILE" "$LINK"
 
-echo "[ installer v 1.2 Beta ]"
-echo "by ziel ★"
-echo "===== DONE ====="
+if [ ! -s "$FILE" ]; then
+    echo "❌ Download gagal"
+    pause
+    continue
+fi
+
+echo "[+] Install $NAME ..."
+su -c "pm install -r \"$FILE\""
+
+if [ $? -eq 0 ]; then
+    echo "✅ Install sukses"
+else
+    echo "❌ Install gagal"
+fi
+
+rm -f "$FILE"
+
 pause
-main_menu
+done
 }
-
 # ================ INFO UPDATE ================
 info_update_mode(){
 
