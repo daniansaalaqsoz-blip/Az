@@ -186,6 +186,8 @@ NAMES=(
 "devheck"
 "scene"
 "kiwi browser"
+"master clone"
+"1.1.1.1 VPN"
 )
 
 LINKS=(
@@ -193,6 +195,8 @@ LINKS=(
 "https://apponthego.com/uploads/file_69877b39e8361.apk"
 "https://apponthego.com/uploads/file_69877bc9bead2.apk"
 "https://apponthego.com/uploads/file_69877e1ade66d.apk"
+"https://apponthego.com/uploads/file_6987ccb6116f4.apk"
+"https://apponthego.com/uploads/file_6987cd8619f76.apk"
 )
 
 TOTAL=${#LINKS[@]}
