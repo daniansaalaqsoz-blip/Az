@@ -1,15 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-PASS="SCRIP TERBARU V1.0"
 
-for i in 1 2 3; do
-    read -s -p "Password: " input
-    echo
-    [ "$input" = "$PASS" ] && break
-    echo "❌ Salah ($i/3)"
-    sleep 1
-done
-
-[ "$input" != "$PASS" ] && exit 1
 # ================= AUTO INSTALL =================
 need_pkg() {
     if ! command -v "$1" >/dev/null 2>&1; then
@@ -25,7 +15,17 @@ need_pkg curl
 need_pkg coreutils
 need_pkg  wget
 
+PASS="SCRIP TERBARU V1.0"
 
+for i in 1 2 3; do
+    read -s -p "Password: " input
+    echo
+    [ "$input" = "$PASS" ] && break
+    echo "❌ Salah ($i/3)"
+    sleep 1
+done
+
+[ "$input" != "$PASS" ] && exit 1
 # ================= COLOR (100% TERMUX SAFE) =================
 RED="\033[31m"
 YEL="\033[33m"
