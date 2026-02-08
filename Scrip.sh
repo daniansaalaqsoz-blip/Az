@@ -15,7 +15,7 @@ need_pkg curl
 need_pkg coreutils
 need_pkg  wget
 
-PASS="SCRIP TERBARU V1.0"
+PASS="scrip terbaru"
 
 for i in 1 2 3; do
     read -s -p "Password: " input
@@ -262,7 +262,7 @@ install_apk_mode
 # ================ INFO UPDATE ================
 info_update_mode(){
 
-echo "╭─⧉ 「 update v1.0 beta」──"
+echo "╭─⧉ 「 update v5.0 beta」──"
 echo "┃ # AUTO DOWNLOAD & INSTALL APK (v0.6)"
 echo "┃ # fix bug"
 echo "┃ # fix module"
@@ -274,6 +274,7 @@ echo "┃ # new UI"
 echo "┃ # cpu max mhz"
 echo "┃ # new UI download"
 echo "┃ # sistem baru download"
+echo "┃ # menu scrip"
 echo "╰────────────────"
 
 pause
@@ -324,79 +325,88 @@ b) main_menu ;;
 *) cpu_boost_mode ;;
 esac
 }
-# ===== THERMAL MANAGER =====
-thermal_mode() {
-need_root
-THERMAL_PATH="/sys/module/msm_thermal/core_control/enabled"
+
+# ================= COPY SCRIPT MODE =================
+copy_mode() {
+
+NAMES=(
+"Chloe"
+"Lynxx"
+"Ylnxxx"
+)
+
+URLS=(
+"https://raw.githubusercontent.com/daniansaalaqsoz-blip/Az/refs/heads/main/Chloe%20x.txt"
+"https://raw.githubusercontent.com/daniansaalaqsoz-blip/Az/refs/heads/main/Lynxx.txt"
+"https://example.com/ylnxxx.txt"
+)
+
+show_file() {
+    url="$1"
+    tmp="$HOME/.temp_show.txt"
+
+    echo
+    echo "[+] Downloading..."
+    curl -L -s "$url" -o "$tmp"
+
+    clear
+    echo "========== ISI FILE =========="
+    cat "$tmp"
+    echo "============================="
+    echo
+    rm -f "$tmp"
+}
 
 while true; do
-clear
-# Cek status thermal
-if [ -f "$THERMAL_PATH" ]; then
-    STATUS=$(cat $THERMAL_PATH)
-    if [ "$STATUS" = "1" ]; then
-        STATUS_TXT="ON ✅"
-    else
-        STATUS_TXT="OFF ⚠"
-    fi
-else
-    STATUS_TXT="File thermal tidak ditemukan ❌"
-fi
+    clear
+    echo "===== COPY SCRIPT MENU ====="
+    echo
 
-echo "===== THERMAL CONTROL ====="
-echo "Status Thermal Proteksi : $STATUS_TXT"
-echo
-echo "[1] Enable Thermal (proteksi aktif)"
-echo "[2] Disable Thermal (proteksi off, HATI-HATI!)"
-echo "[0] Kembali"
-read -p "Pilih: " t
+    for i in "${!NAMES[@]}"; do
+        echo "[$((i+1))] ${NAMES[$i]}"
+    done
 
-case $t in
-1)
-    if [ -f "$THERMAL_PATH" ]; then
-        su -c "echo 1 > $THERMAL_PATH"
-        echo "✅ Thermal Proteksi ENABLED"
-    else
-        echo "❌ Thermal file tidak ditemukan di device ini"
-    fi
-    pause
-    ;;
-2)
-    if [ -f "$THERMAL_PATH" ]; then
-        su -c "echo 0 > $THERMAL_PATH"
-        echo "⚠ Thermal Proteksi DISABLED!"
-        echo "CPU bisa overheat!"
-    else
-        echo "❌ Thermal file tidak ditemukan di device ini"
-    fi
-    pause
-    ;;
-0) return ;;
-*) echo "Pilihan salah"; sleep 1 ;;
-esac
+    echo "[0] Kembali"
+    echo
+
+    read -p "Pilih (contoh: 1 3 4): " pilihan
+
+    [ "$pilihan" = "0" ] && main_menu
+
+    for p in $pilihan; do
+        idx=$((p-1))
+        if [ -n "${URLS[$idx]}" ]; then
+            show_file "${URLS[$idx]}"
+            read -p "Enter lanjut..."
+        fi
+    done
 done
 }
+
+
 # ================= MENU =================
 main_menu(){
 clear
-echo "┏━ ⊑ Welcome to tools 1.0 Beta ⊒" 
+echo "┏━ ⊑ Welcome to tools 5.0 Beta ⊒"
 echo "│✎ 1 Device Info"
 echo "│✎ 2 Live Monitor"
 echo "│✎ 3 Install APK via Link"
 echo "│✎ 4 Info Update"
 echo "│✎ 5 CPU Max Performance"
-echo "│✎ 6 thermal mode"
+echo "│✎ 6 Copy Script Mode"
 echo "│✎ q Exit"
 echo "╰──────────────"
-echo 
+echo
+
 read -p "Pilih: " opt
+
 case $opt in
-1) info_mode; back_menu ;;
-2) monitor_mode; back_menu ;;
+1) info_mode ;;
+2) monitor_mode ;;
 3) install_apk_mode ;;
 4) info_update_mode ;;
 5) cpu_boost_mode ;;
-6) thermal_mode  ;;
+6) copy_mode ;;
 q) exit ;;
 *) main_menu ;;
 esac
