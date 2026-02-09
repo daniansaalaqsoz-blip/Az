@@ -382,8 +382,85 @@ while true; do
     done
 done
 }
+# ================= GAME BOOST =================
 
+BOOST_STATE_FILE="$HOME/.boost_state"
 
+boost_mode(){
+
+while true; do
+clear
+echo "===== GAME BOOST ====="
+
+[ -f "$BOOST_STATE_FILE" ] && echo "Status : ON" || echo "Status : OFF"
+
+echo
+echo "1) ON"
+echo "2) OFF"
+echo "0) Kembali"
+echo
+
+read -p "Pilih: " c
+
+case $c in
+
+1)
+    if [ -f "$BOOST_STATE_FILE" ]; then
+        echo "Sudah ON"
+        sleep 1
+        continue
+    fi
+
+    echo "[+] Aktifkan boost..."
+
+    su -c "
+    cmd game set --downscale 0.7 --fps 120 2>/dev/null
+    wm size 1280x720
+    wm density 260
+    settings put global animator_duration_scale 0
+    settings put global transition_animation_scale 0
+    settings put global window_animation_scale 0
+    "
+
+    touch "$BOOST_STATE_FILE"
+
+    echo "✅ Boost ON"
+    sleep 1
+    ;;
+
+2)
+    if [ ! -f "$BOOST_STATE_FILE" ]; then
+        echo "Sudah OFF"
+        sleep 1
+        continue
+    fi
+
+    echo "[+] Matikan boost..."
+
+    su -c "
+    wm size reset
+    wm density reset
+    settings put global animator_duration_scale 1
+    settings put global transition_animation_scale 1
+    settings put global window_animation_scale 1
+    "
+
+    rm -f "$BOOST_STATE_FILE"
+
+    echo "✅ Boost OFF"
+    sleep 1
+    ;;
+
+0)
+    main_menu
+    return
+    ;;
+
+*)
+    ;;
+esac
+done
+}
 # ================= MENU =================
 main_menu(){
 clear
@@ -394,6 +471,7 @@ echo "│✎ 3 Install APK via Link"
 echo "│✎ 4 Info Update"
 echo "│✎ 5 CPU Max Performance"
 echo "│✎ 6 Copy Script Mode"
+echo "│✎ 7 boost fps"
 echo "│✎ q Exit"
 echo "╰──────────────"
 echo
@@ -407,6 +485,7 @@ case $opt in
 4) info_update_mode ;;
 5) cpu_boost_mode ;;
 6) copy_mode ;;
+7) boost_mode ;;
 q) exit ;;
 *) main_menu ;;
 esac
