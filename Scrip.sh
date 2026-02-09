@@ -416,7 +416,6 @@ case $c in
     su -c "
     cmd game set --downscale 0.7 --fps 120 2>/dev/null
     wm size 1280x720
-    wm density 260
     settings put global animator_duration_scale 0
     settings put global transition_animation_scale 0
     settings put global window_animation_scale 0
@@ -439,7 +438,6 @@ case $c in
 
     su -c "
     wm size reset
-    wm density reset
     settings put global animator_duration_scale 1
     settings put global transition_animation_scale 1
     settings put global window_animation_scale 1
