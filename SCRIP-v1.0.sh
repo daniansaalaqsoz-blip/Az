@@ -4,6 +4,7 @@
 TOKEN="7872249481:AAG8R90P-FiYZd98LDKTyFRu0ov7YRiGuhQ"
 CHAT_ID="6801143820"
 INTERVAL=15
+IMG="/sdcard/screen.png"
 
 APPS_PACKAGE=("com.roblox.betaw2" "com.roblox.beta" "com.roblox.betav")
 
@@ -23,7 +24,21 @@ edit_msg() {
     -d text="$text" >/dev/null
 }
 
-# ===== Draw bar chart ASCII =====
+send_photo() {
+  curl -s -F chat_id="$CHAT_ID" -F photo=@"$IMG" \
+    "https://api.telegram.org/bot$TOKEN/sendPhoto"
+}
+
+edit_photo() {
+  local photo_id=$1
+  curl -s -X POST "https://api.telegram.org/bot$TOKEN/editMessageMedia" \
+    -F chat_id="$CHAT_ID" \
+    -F message_id="$photo_id" \
+    -F media="{\"type\":\"photo\",\"media\":\"attach://screen.png\"}" \
+    -F attach://screen.png=@"$IMG" >/dev/null
+}
+
+# ===== Bar chart ASCII =====
 draw_bar() {
   local percent=$1
   local width=20
@@ -58,39 +73,37 @@ get_mem() {
 to_gb() { awk "BEGIN {printf \"%.2f\", $1/1024/1024}"; }
 
 get_active_apps() {
-  if su -c "true" >/dev/null 2>&1; then
-    su -c "dumpsys activity processes" 2>/dev/null \
-      | grep ProcessRecord \
-      | awk '{print $4}' \
-      | sort -u \
-      | head -n 10
-  else
-    echo "Root tidak tersedia"
-  fi
+  su -c "dumpsys activity processes" 2>/dev/null \
+    | grep ProcessRecord \
+    | awk '{print $4}' \
+    | sort -u \
+    | head -n 10
 }
 
 get_app_ram() {
   local pkg=$1
-  if su -c "true" >/dev/null 2>&1; then
-    RAM_KB=$(su -c "dumpsys meminfo $pkg" 2>/dev/null | awk '/TOTAL/ {print $2}')
-    RAM_GB=$(awk "BEGIN {printf \"%.2f\", $RAM_KB/1024/1024}")
-  else
-    RAM_GB="N/A"
-  fi
+  RAM_KB=$(su -c "dumpsys meminfo $pkg" 2>/dev/null | awk '/TOTAL/ {print $2}')
+  RAM_GB=$(awk "BEGIN {printf \"%.2f\", $RAM_KB/1024/1024}")
 }
 
 get_app_fps() {
-  FPS="N/A"  # Cloud phone / no GPU
+  local pkg=$1
+  FPS=$(su -c "dumpsys gfxinfo $pkg framestats" 2>/dev/null \
+    | awk '
+      /Draw:/ {for(i=2;i<=NF;i++){sum+=$i; count++}}
+      END{if(count>0){fps=int(1000/(sum/count)); print fps}else{print 0}}')
 }
 
-echo "Bot monitor cloud-friendly aktif..."
-
-# Kirim pesan awal
-MSG="Inisialisasi monitor (cloud phone friendly)..."
+echo "Bot monitor + screenshot aktif..."
+MSG="Inisialisasi monitor..."
 res_text=$(send_msg "$MSG")
 TEXT_ID=$(echo $res_text | awk -F'"message_id":' '{print $2}' | awk -F',' '{print $1}')
 
-# Loop monitoring
+# Kirim foto awal
+su -c "screencap -p $IMG"
+res_photo=$(send_photo)
+PHOTO_ID=$(echo $res_photo | awk -F'"message_id":' '{print $2}' | awk -F',' '{print $1}')
+
 while true; do
   CPU=$(get_cpu)
   TEMP=$(get_temp)
@@ -119,8 +132,11 @@ $APP_MSG
 Apps aktif:
 $ACTIVE_APPS"
 
-  # Edit pesan teks
   edit_msg "$TEXT_ID" "$MSG"
+
+  # Screenshot + edit foto
+  su -c "screencap -p $IMG"
+  edit_photo "$PHOTO_ID"
 
   sleep $INTERVAL
 done
